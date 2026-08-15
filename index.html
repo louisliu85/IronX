@@ -1,0 +1,1397 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>打鐵場 — 隨機節奏訓練</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Noto+Sans+TC:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --charcoal: #1B1A18;
+    --charcoal-2: #242220;
+    --chalk: #F1EEE6;
+    --chalk-dim: #B8B3A8;
+    --go: #7A9A3C;
+    --go-bright: #9CC24A;
+    --stop: #C1440E;
+    --stop-bright: #E15B24;
+    --lane: #3A5A73;
+  }
+
+  *{ box-sizing: border-box; margin:0; padding:0; -webkit-tap-highlight-color: transparent; }
+
+  html,body{
+    height:100%;
+    background: var(--charcoal);
+    color: var(--chalk);
+    font-family: 'Inter', 'Noto Sans TC', sans-serif;
+    overflow:hidden;
+    -webkit-user-select:none;
+    user-select:none;
+  }
+
+  .screen{
+    position:fixed; inset:0;
+    display:flex; flex-direction:column;
+    transition: background 0.15s ease;
+  }
+  .hidden{ display:none !important; }
+
+  /* ---------- 設定畫面 ---------- */
+  #setup{
+    padding: 28px 24px 32px;
+    justify-content: flex-start;
+    overflow-y:auto;
+  }
+  .brand{
+    font-family:'Oswald', 'Noto Sans TC', sans-serif;
+    font-weight:700;
+    font-size: 15px;
+    letter-spacing: 0.18em;
+    color: var(--go-bright);
+    text-transform: uppercase;
+  }
+  .brand span{ color: var(--chalk-dim); font-weight:500; }
+  .brand-row{
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .brand-actions{ display:flex; align-items:center; gap:8px; }
+  .mute-btn{
+    width:32px; height:32px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    background: var(--charcoal-2);
+    border: 1px solid #3a372f;
+    color: var(--chalk-dim);
+    cursor:pointer;
+    flex-shrink:0;
+  }
+  .mute-btn svg{ width:15px; height:15px; }
+  .mute-btn .icon-muted{ display:none; }
+  .mute-btn.is-muted .icon-unmuted{ display:none; }
+  .mute-btn.is-muted .icon-muted{ display:block; }
+  #run .mute-btn{
+    background: rgba(0,0,0,0.25);
+    border: 1px solid rgba(255,255,255,0.25);
+    color: rgba(255,255,255,0.85);
+  }
+  .help-btn{
+    display:flex; align-items:center; gap:5px;
+    background: var(--charcoal-2);
+    border: 1px solid #3a372f;
+    color: var(--chalk-dim);
+    font-family:'Inter', 'Noto Sans TC', sans-serif; font-size: 11px;
+    padding: 6px 11px;
+    border-radius: 20px;
+    cursor:pointer;
+    flex-shrink:0;
+  }
+  .help-btn svg{ width:13px; height:13px; }
+
+  .help-overlay{
+    position:fixed; inset:0; z-index:50;
+    background: rgba(10,9,7,0.72);
+    display:flex; align-items:flex-end; justify-content:center;
+  }
+  .help-overlay.hidden{ display:none; }
+  .help-card{
+    width:100%; max-width:480px; max-height:82vh;
+    background: var(--charcoal);
+    border: 1px solid #3a372f;
+    border-radius: 18px 18px 0 0;
+    padding: 22px 22px 26px;
+    overflow-y:auto;
+  }
+  .help-header{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom: 16px;
+  }
+  .help-title{
+    font-family:'Oswald', 'Noto Sans TC', sans-serif; font-weight:700; font-size: 22px;
+    color: var(--chalk);
+  }
+  .help-close{
+    width:30px; height:30px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    background: var(--charcoal-2); color: var(--chalk-dim);
+    cursor:pointer;
+  }
+  .help-close svg{ width:15px; height:15px; }
+  .help-body{ display:flex; flex-direction:column; gap:16px; }
+  .help-item{ display:flex; gap:12px; align-items:flex-start; }
+  .help-dot{
+    flex-shrink:0; margin-top:2px;
+    width:22px; height:22px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'JetBrains Mono', monospace; font-size:11px; font-weight:700;
+  }
+  .go-dot{ background: var(--go-bright); }
+  .stop-dot{ background: var(--stop-bright); }
+  .num-dot{ background: var(--charcoal-2); border:1px solid #3a372f; color: var(--chalk-dim); }
+  .help-text{ font-size:13.5px; line-height:1.6; color: var(--chalk-dim); }
+  .help-text b{ color: var(--chalk); font-weight:600; }
+  .help-got-it{
+    width:100%; margin-top: 22px;
+    padding: 14px;
+    background: var(--go-bright);
+    color:#10140a;
+    border:none; border-radius:3px;
+    font-family:'Oswald', 'Noto Sans TC', sans-serif; font-weight:700; font-size:15px;
+    text-transform:uppercase; letter-spacing:0.04em;
+    cursor:pointer;
+  }
+
+  h1{
+    font-family:'Oswald', 'Noto Sans TC', sans-serif;
+    font-weight:700;
+    font-size: 40px;
+    line-height:1.05;
+    margin-top: 10px;
+    letter-spacing: -0.01em;
+  }
+  .sub{
+    color: var(--chalk-dim);
+    font-size: 14px;
+    margin-top: 10px;
+    line-height:1.55;
+    max-width: 46ch;
+  }
+
+  .lane-divider{
+    height: 10px;
+    margin: 26px 0 24px;
+    background-repeat: repeat-x;
+    background-size: 22px 10px;
+    background-image: repeating-linear-gradient(
+      90deg,
+      var(--stop) 0 10px,
+      transparent 10px 22px
+    );
+    opacity:0.55;
+  }
+
+  .group{ margin-bottom: 26px; }
+  .group-label{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--chalk-dim);
+    margin-bottom: 12px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .group-label .n{ color: var(--go-bright); }
+
+  .choice-row{
+    display:grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+  #durationRow{ grid-template-columns: repeat(3, 1fr); }
+  .choice{
+    background: var(--charcoal-2);
+    border: 1px solid #3a372f;
+    color: var(--chalk);
+    font-family:'Oswald', 'Noto Sans TC', sans-serif;
+    font-weight:500;
+    font-size: 14px;
+    padding: 13px 6px;
+    border-radius: 3px;
+    text-align:center;
+    cursor:pointer;
+    transition: all 0.12s ease;
+  }
+  .choice:active{ transform: scale(0.97); }
+  .choice.active{
+    background: var(--go);
+    border-color: var(--go-bright);
+    color: #10140a;
+    font-weight:600;
+  }
+  .choice small{ display:block; font-family:'Inter', 'Noto Sans TC', sans-serif; font-size:10px; font-weight:400; opacity:0.75; margin-top:2px; }
+
+  .diff-row{ grid-template-columns: repeat(3, 1fr); }
+  .diff-row .choice.active{ background: var(--stop); border-color: var(--stop-bright); color:#1a0d05; }
+
+  .will-row{ grid-template-columns: repeat(3, 1fr); }
+  .will-row .choice{ font-size: 12.5px; padding: 12px 4px; }
+  .will-row .choice.active{ background: var(--lane); border-color: #4d7a99; color: #eef4f8; }
+
+  .start-btn{
+    margin-top: 8px;
+    width: 100%;
+    padding: 18px;
+    background: var(--go-bright);
+    color: #10140a;
+    border:none;
+    border-radius: 3px;
+    font-family:'Oswald', 'Noto Sans TC', sans-serif;
+    font-weight:700;
+    font-size: 18px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    cursor:pointer;
+    box-shadow: 0 4px 0 #5c7a2c;
+  }
+  .start-btn:active{ transform: translateY(2px); box-shadow: 0 2px 0 #5c7a2c; }
+
+  .hint-row{
+    margin-top: 14px;
+    font-family:'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--chalk-dim);
+    text-align:center;
+  }
+
+  /* ---------- 訓練畫面 ---------- */
+  #run{
+    align-items:center; justify-content:center;
+  }
+  .top-bar{
+    position:absolute; top:0; left:0; right:0;
+    padding: 18px 20px 0;
+    display:flex; align-items:center; justify-content:flex-end;
+    z-index:5;
+    pointer-events: none;
+  }
+  .top-actions{ pointer-events: auto; }
+  .timer-ui{
+    position:absolute; top:0; left:0; right:0;
+    padding: 18px 20px 0;
+    z-index:4;
+    transition: opacity 0.35s ease;
+    pointer-events: none;
+  }
+  .total-time{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 0.05em;
+    color: rgba(255,255,255,0.75);
+  }
+  .quit-btn{
+    background: rgba(0,0,0,0.25);
+    border: 1px solid rgba(255,255,255,0.25);
+    color: rgba(255,255,255,0.85);
+    font-family:'Inter', 'Noto Sans TC', sans-serif; font-size: 12px;
+    padding: 7px 12px;
+    border-radius: 20px;
+    cursor:pointer;
+  }
+  .top-actions{ display:flex; gap: 8px; }
+  .pip-btn{
+    background: rgba(0,0,0,0.25);
+    border: 1px solid rgba(255,255,255,0.25);
+    color: rgba(255,255,255,0.85);
+    font-family:'Inter', 'Noto Sans TC', sans-serif; font-size: 12px;
+    padding: 7px 12px;
+    border-radius: 20px;
+    cursor:pointer;
+    display:flex; align-items:center; gap:5px;
+  }
+  .pip-btn svg{ width:13px; height:13px; }
+
+  .progress-track{
+    position:absolute; top: 42px; left: 20px;
+    width: calc((100% - 40px) * 0.53);
+    height: 4px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 2px;
+    overflow:hidden;
+    z-index:5;
+  }
+  .timer-ui-hidden{ opacity: 0; }
+  .timer-tap-zone{
+    position:absolute; top:0; left:0; right:0; height: 66px;
+    z-index: 4;
+  }
+  .progress-fill{
+    height:100%;
+    background: rgba(255,255,255,0.85);
+    width:0%;
+  }
+
+  .ring-wrap{
+    position:relative;
+    width: min(72vw, 320px);
+    height: min(72vw, 320px);
+  }
+  .ring-wrap svg{ width:100%; height:100%; transform: rotate(-90deg); }
+  .ring-bg{ fill:none; stroke: rgba(255,255,255,0.16); stroke-width: 10; }
+  .ring-fg{
+    fill:none; stroke: var(--chalk); stroke-width: 10;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.1s linear;
+  }
+  .ring-center{
+    position:absolute; inset:0;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+  }
+  .state-word{
+    font-family:'Oswald', 'Noto Sans TC', sans-serif;
+    font-weight:700;
+    font-size: 15px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--chalk-dim);
+    margin-bottom: 6px;
+  }
+  .state-count{
+    font-family:'JetBrains Mono', monospace;
+    font-weight:700;
+    font-size: 15vw;
+    line-height:1;
+    color: var(--chalk);
+  }
+  #run.go{ background: var(--go-bright); }
+  #run.stop{ background: var(--stop-bright); }
+  #run.go .state-word,#run.go .state-count{ color: #12180a; }
+  #run.stop .state-word,#run.stop .state-count{ color: #200f06; }
+  #run.go .ring-bg,#run.stop .ring-bg{ stroke: rgba(0,0,0,0.15); }
+  #run.go .ring-fg,#run.stop .ring-fg{ stroke: rgba(0,0,0,0.6); }
+  #run.go .total-time,#run.stop .total-time{ color: rgba(0,0,0,0.6); }
+  #run.go .tick,#run.stop .tick{ background: rgba(0,0,0,0.3); }
+  #run.go .flash-label,#run.stop .flash-label{ color: rgba(0,0,0,0.55); }
+
+  .lane-ticks{
+    position:absolute; bottom: 20px; left:0; right:0;
+    display:flex; justify-content:center; gap:6px;
+    z-index:4;
+  }
+  .lane-ticks .tick{
+    width: 3px; height: 16px;
+    background: rgba(255,255,255,0.22);
+    border-radius:1px;
+  }
+
+  .flash-label{
+    position:absolute; bottom: 64px; left:0; right:0;
+    text-align:center;
+    font-family:'Oswald', 'Noto Sans TC', sans-serif; font-weight:600; font-size: 22px;
+    letter-spacing:0.02em;
+    color: var(--chalk-dim);
+    padding: 0 24px;
+  }
+  .sub-flash{
+    position:absolute; bottom: 44px; left:0; right:0;
+    text-align:center;
+    font-family:'Inter', 'Noto Sans TC', sans-serif; font-weight:600; font-size: 12px;
+    letter-spacing:0.04em;
+    color: var(--stop-bright);
+    padding: 0 24px;
+    opacity:0;
+    transform: translateY(4px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+  .sub-flash.visible{ opacity:1; transform: translateY(0); }
+  #run.go .sub-flash{ color: #4a2c05; }
+  #run.stop .sub-flash{ color: #3a0f00; }
+
+  /* ---------- 結束畫面 ---------- */
+  #done{
+    align-items:center; justify-content:center;
+    text-align:center;
+    padding: 32px;
+  }
+  #done h2{
+    font-family:'Oswald', 'Noto Sans TC', sans-serif; font-weight:700; font-size: 34px;
+    color: var(--go-bright);
+  }
+  #done.outcome-fail h2{ color: var(--stop-bright); }
+  #done p{ color: var(--chalk-dim); margin-top: 12px; font-size:14px; line-height:1.6; }
+  .stat-row{
+    display:flex; gap: 14px; margin-top: 28px;
+  }
+  .stat{
+    background: var(--charcoal-2);
+    border:1px solid #3a372f;
+    border-radius:4px;
+    padding: 16px 20px;
+    min-width: 110px;
+  }
+  .stat .v{ font-family:'JetBrains Mono', monospace; font-weight:700; font-size: 26px; color: var(--chalk); }
+  .stat .l{ font-size: 11px; color: var(--chalk-dim); margin-top:4px; text-transform:uppercase; letter-spacing:0.08em; }
+  .again-btn{
+    margin-top: 32px;
+    padding: 15px 32px;
+    background: transparent;
+    border: 1px solid var(--go-bright);
+    color: var(--go-bright);
+    border-radius: 3px;
+    font-family:'Oswald', 'Noto Sans TC', sans-serif; font-weight:600; font-size:15px;
+    text-transform:uppercase; letter-spacing:0.05em;
+    cursor:pointer;
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ 設定畫面 ============ -->
+<div id="setup" class="screen">
+  <div class="brand-row">
+    <div class="brand">打鐵場 <span>／ IRON LANE</span></div>
+    <div class="brand-actions">
+      <div class="mute-btn" id="muteBtnSetup" title="靜音開關">
+        <svg class="icon-unmuted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9v6h4l5 5V4L8 9H4z"/><path d="M16 8.5a4.5 4.5 0 0 1 0 7" stroke-linecap="round"/><path d="M18.5 6a8 8 0 0 1 0 12" stroke-linecap="round"/></svg>
+        <svg class="icon-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9v6h4l5 5V4L8 9H4z"/><path d="M16 9l5 6M21 9l-5 6" stroke-linecap="round"/></svg>
+      </div>
+      <div class="help-btn" id="helpBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.9.4-1.5 1-1.5 2.2" stroke-linecap="round"/><circle cx="12" cy="17" r="0.6" fill="currentColor" stroke="none"/></svg>
+        新手教學
+      </div>
+    </div>
+  </div>
+  <h1>隨機節奏<br>打鐵運動</h1>
+  <p class="sub">綠燈亮起就開始動作，紅燈亮起立刻停止任何動作。每一段的長度都不固定，讓身體隨時保持反應狀態。</p>
+
+  <div class="lane-divider"></div>
+
+  <div class="group">
+    <div class="group-label"><span class="n">01</span> 總時長</div>
+    <div class="choice-row" id="durationRow">
+      <div class="choice" data-v="tiny">非常短<small>1-3 分鐘</small></div>
+      <div class="choice" data-v="short">較短<small>4-11 分鐘</small></div>
+      <div class="choice active" data-v="normal">一般<small>8-23 分鐘</small></div>
+      <div class="choice" data-v="long">較長<small>15-45 分鐘</small></div>
+      <div class="choice" data-v="veryLong">非常長<small>30-90 分鐘</small></div>
+    </div>
+  </div>
+
+  <div class="group">
+    <div class="group-label"><span class="n">02</span> 難度</div>
+    <div class="choice-row diff-row" id="difficultyRow">
+      <div class="choice" data-v="boring">無聊<small>很悠閒</small></div>
+      <div class="choice" data-v="easy">簡單<small>耐力型</small></div>
+      <div class="choice active" data-v="normal">一般<small>均衡</small></div>
+      <div class="choice" data-v="hard">困難<small>燃燒感</small></div>
+      <div class="choice" data-v="insane">極限<small>幾乎不停</small></div>
+    </div>
+  </div>
+
+  <div class="group">
+    <div class="group-label"><span class="n">03</span> 衝刺意願</div>
+    <div class="choice-row will-row" id="willingnessRow">
+      <div class="choice" data-v="0">非常保守<small>先不用</small></div>
+      <div class="choice" data-v="0.2">保守<small>不急</small></div>
+      <div class="choice active" data-v="0.5">一般<small>順其自然</small></div>
+      <div class="choice" data-v="0.7">積極<small>想衝刺</small></div>
+      <div class="choice" data-v="0.9">非常積極<small>我要！</small></div>
+    </div>
+  </div>
+
+  <button class="start-btn" id="startBtn">開始訓練</button>
+  <div class="hint-row">綠燈 = 開始動作　·　紅燈 = 停止任何動作</div>
+</div>
+
+<!-- ============ 新手教學視窗 ============ -->
+<div id="helpOverlay" class="help-overlay hidden">
+  <div class="help-card">
+    <div class="help-header">
+      <div class="help-title">新手教學</div>
+      <div class="help-close" id="helpClose">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 5l14 14M19 5L5 19"/></svg>
+      </div>
+    </div>
+    <div class="help-body">
+      <div class="help-item">
+        <div class="help-dot go-dot"></div>
+        <div class="help-text"><b>綠燈亮起</b>：開始動作，保持節奏一直做下去。</div>
+      </div>
+      <div class="help-item">
+        <div class="help-dot stop-dot"></div>
+        <div class="help-text"><b>紅燈亮起</b>：立刻停止任何動作，不要鬆懈，直到燈號再次改變。</div>
+      </div>
+      <div class="help-item">
+        <div class="help-dot num-dot">1</div>
+        <div class="help-text"><b>總時長</b>：選一個級距（非常短～非常長），實際時長會在區間內隨機決定，每次都不一樣。</div>
+      </div>
+      <div class="help-item">
+        <div class="help-dot num-dot">2</div>
+        <div class="help-text"><b>難度</b>：動作與停止各自有獨立倍率。難度越高，動作段落略縮短，停止段落縮得更多，讓節奏更緊湊、更不對稱。</div>
+      </div>
+      <div class="help-item">
+        <div class="help-dot num-dot">3</div>
+        <div class="help-text"><b>衝刺意願</b>：影響主時長跑完後能不能進入「最後衝刺」。數值越高，成功進入最後衝刺的機率越高；越低則越容易直接被判定這輪控制失敗、收工。</div>
+      </div>
+      <div class="help-item">
+        <div class="help-dot num-dot">4</div>
+        <div class="help-text"><b>首輪熱身</b>：第一次「動作」階段會顯示專屬的熱身指示，之後才進入一般的隨機動作／停止循環。</div>
+      </div>
+      <div class="help-item">
+        <div class="help-dot num-dot">5</div>
+        <div class="help-text"><b>中後期加速</b>：主時長超過 50% 時，動作／停止的段落時間直接減半（等於節奏變 2 倍快）；超過 75% 時再減半一次（變成 4 倍快），畫面會同步跳出提醒。</div>
+      </div>
+      <div class="help-item">
+        <div class="help-dot num-dot">6</div>
+        <div class="help-text"><b>訊息抽取方式</b>：「動作」與「完賽」訊息是加權隨機（部分句子出現機率較高），「停止」訊息則是單純均等隨機，每句機率相同。</div>
+      </div>
+      <div class="help-item">
+        <div class="help-dot num-dot">7</div>
+        <div class="help-text"><b>完賽判定</b>：主時長跑完後，依「衝刺意願」的機率決定這輪是進入「最後衝刺」（有限時間內完成最後一組），還是「控制失敗」直接收工——收工後可以再挑戰一次。</div>
+      </div>
+      <div class="help-item">
+        <div class="help-dot num-dot">8</div>
+        <div class="help-text"><b>浮動視窗</b>：訓練畫面右上角的按鈕，可以把倒數畫面變成浮動小視窗，切到其他頁面時也能繼續看到。<br>（iOS 版本會先跳出直播畫面，請點選畫面上的子母畫面按鈕，即可顯示浮動視窗！）</div>
+      </div>
+      <div class="help-item">
+        <div class="help-dot num-dot">9</div>
+        <div class="help-text"><b>畫面上方空白處</b>：訓練中時鐘跟進度條 3 秒後會自動隱藏，點一下畫面最上方空白處可以再叫出來。</div>
+      </div>
+    </div>
+    <button class="help-got-it" id="helpGotIt">我知道了</button>
+  </div>
+</div>
+
+<!-- ============ 訓練畫面 ============ -->
+<div id="run" class="screen hidden">
+  <div class="timer-tap-zone" id="timerTapZone"></div>
+  <div class="top-bar">
+    <div class="top-actions">
+      <div class="mute-btn" id="muteBtnRun" title="靜音開關">
+        <svg class="icon-unmuted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9v6h4l5 5V4L8 9H4z"/><path d="M16 8.5a4.5 4.5 0 0 1 0 7" stroke-linecap="round"/><path d="M18.5 6a8 8 0 0 1 0 12" stroke-linecap="round"/></svg>
+        <svg class="icon-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9v6h4l5 5V4L8 9H4z"/><path d="M16 9l5 6M21 9l-5 6" stroke-linecap="round"/></svg>
+      </div>
+      <div class="pip-btn" id="pipBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="14" rx="1.5"/><rect x="12" y="11" width="7" height="5" rx="1" fill="currentColor"/></svg>
+        浮動視窗
+      </div>
+      <div class="quit-btn" id="quitBtn">結束</div>
+    </div>
+  </div>
+
+  <div class="timer-ui" id="timerUI">
+    <div class="total-time" id="totalTimeLabel">05:00</div>
+    <div class="progress-track" id="progressTrack"><div class="progress-fill" id="progressFill"></div></div>
+  </div>
+
+  <div class="ring-wrap">
+    <svg viewBox="0 0 120 120">
+      <circle class="ring-bg" cx="60" cy="60" r="52"></circle>
+      <circle class="ring-fg" id="ringFg" cx="60" cy="60" r="52" stroke-dasharray="326.7" stroke-dashoffset="0"></circle>
+    </svg>
+    <div class="ring-center">
+      <div class="state-word" id="stateWord">準備</div>
+      <div class="state-count" id="stateCount">3</div>
+    </div>
+  </div>
+
+  <div class="flash-label" id="flashLabel">深呼吸，準備開始</div>
+  <div class="sub-flash" id="subFlash">節奏會越來越快，撐住！</div>
+  <div class="lane-ticks">
+    <div class="tick"></div><div class="tick"></div><div class="tick"></div>
+    <div class="tick"></div><div class="tick"></div><div class="tick"></div>
+    <div class="tick"></div><div class="tick"></div>
+  </div>
+</div>
+
+<!-- ============ 結束畫面 ============ -->
+<div id="done" class="screen hidden">
+  <div class="brand">訓練完成</div>
+  <h2 id="doneTitle">今天也撐過去了</h2>
+  <p id="doneDesc">紅綠燈總共交換了 <span id="switchCount">0</span> 次，你的身體知道發生了什麼事。</p>
+  <div class="stat-row">
+    <div class="stat"><div class="v" id="statGo">0:00</div><div class="l">動作總時長</div></div>
+    <div class="stat"><div class="v" id="statStop">0:00</div><div class="l">休息總時長</div></div>
+  </div>
+  <button class="again-btn" id="againBtn">再撐一輪</button>
+</div>
+
+<script>
+(function(){
+  const setupEl = document.getElementById('setup');
+  const runEl = document.getElementById('run');
+  const doneEl = document.getElementById('done');
+
+  const durationRow = document.getElementById('durationRow');
+  const difficultyRow = document.getElementById('difficultyRow');
+  const startBtn = document.getElementById('startBtn');
+  const quitBtn = document.getElementById('quitBtn');
+  const againBtn = document.getElementById('againBtn');
+
+  const helpBtn = document.getElementById('helpBtn');
+  const helpOverlay = document.getElementById('helpOverlay');
+  const helpClose = document.getElementById('helpClose');
+  const helpGotIt = document.getElementById('helpGotIt');
+
+  function openHelp(){ helpOverlay.classList.remove('hidden'); }
+  function closeHelp(){ helpOverlay.classList.add('hidden'); }
+  helpBtn.addEventListener('click', openHelp);
+  helpClose.addEventListener('click', closeHelp);
+  helpGotIt.addEventListener('click', closeHelp);
+  helpOverlay.addEventListener('click', (e) => {
+    if(e.target === helpOverlay) closeHelp();
+  });
+
+  try{
+    if(!localStorage.getItem('ironLaneHelpSeen')){
+      openHelp();
+      localStorage.setItem('ironLaneHelpSeen', '1');
+    }
+  }catch(e){ }
+
+  // ---- 靜音開關 ----
+  let isMuted = false;
+  try{ isMuted = localStorage.getItem('ironLaneMuted') === '1'; }catch(e){}
+
+  const muteButtons = [document.getElementById('muteBtnSetup'), document.getElementById('muteBtnRun')];
+  function updateMuteIcons(){
+    muteButtons.forEach(btn => btn.classList.toggle('is-muted', isMuted));
+  }
+  function toggleMute(){
+    isMuted = !isMuted;
+    updateMuteIcons();
+    try{ localStorage.setItem('ironLaneMuted', isMuted ? '1' : '0'); }catch(e){}
+  }
+  muteButtons.forEach(btn => btn.addEventListener('click', toggleMute));
+  updateMuteIcons();
+
+  const totalTimeLabel = document.getElementById('totalTimeLabel');
+  const progressFill = document.getElementById('progressFill');
+  const timerUI = document.getElementById('timerUI');
+  const timerTapZone = document.getElementById('timerTapZone');
+  const ringFg = document.getElementById('ringFg');
+  const stateWord = document.getElementById('stateWord');
+  const stateCount = document.getElementById('stateCount');
+  const flashLabel = document.getElementById('flashLabel');
+  const subFlash = document.getElementById('subFlash');
+  const pipBtn = document.getElementById('pipBtn');
+
+  const RING_CIRC = 326.7;
+
+  // ---------- 浮動視窗（Picture-in-Picture）---------- （原封不動保留）
+  let pipMode = null;
+  let pipRefs = null;
+  let pipWindowRef = null;
+  let pipCanvas = null, pipCtx = null, pipVideoEl = null, pipRAF = null;
+
+  let visualState = {
+    phaseType: 'idle', word: '', count: '', ratio: 1,
+    bgColor: '#1B1A18', textColor: '#F1EEE6',
+    ringTrack: 'rgba(255,255,255,0.16)', ringActive: '#F1EEE6'
+  };
+
+  function computeColors(phaseType){
+    if(phaseType === 'go'){
+      return { bgColor:'#9CC24A', textColor:'#12180a', ringTrack:'rgba(0,0,0,0.15)', ringActive:'rgba(0,0,0,0.6)' };
+    }
+    if(phaseType === 'stop'){
+      return { bgColor:'#E15B24', textColor:'#200f06', ringTrack:'rgba(0,0,0,0.15)', ringActive:'rgba(0,0,0,0.6)' };
+    }
+    return { bgColor:'#1B1A18', textColor:'#F1EEE6', ringTrack:'rgba(255,255,255,0.16)', ringActive:'#F1EEE6' };
+  }
+
+  function applyVisual(word, countText, ratio, phaseType){
+    stateWord.textContent = word;
+    stateCount.textContent = countText;
+    ringFg.style.strokeDashoffset = RING_CIRC * (1 - ratio);
+    const colors = computeColors(phaseType);
+    visualState = { phaseType, word, count: countText, ratio, ...colors };
+    syncPiP();
+  }
+
+  function syncPiP(){
+    if(pipMode === 'document' && pipRefs){
+      pipRefs.root.style.background = visualState.bgColor;
+      pipRefs.word.textContent = visualState.word;
+      pipRefs.word.style.color = visualState.textColor;
+      pipRefs.count.textContent = visualState.count;
+      pipRefs.count.style.color = visualState.textColor;
+      pipRefs.ringBg.setAttribute('stroke', visualState.ringTrack);
+      pipRefs.ringFg.setAttribute('stroke', visualState.ringActive);
+      pipRefs.ringFg.style.strokeDashoffset = RING_CIRC * (1 - visualState.ratio);
+      pipRefs.flash.innerHTML = flashLabel.innerHTML;
+      pipRefs.flash.style.color = visualState.textColor;
+      pipRefs.flash.style.opacity = visualState.textColor === '#F1EEE6' ? '0.85' : '0.7';
+      const subVisible = subFlash.classList.contains('visible');
+      pipRefs.subFlash.textContent = subVisible ? subFlash.textContent : '';
+      pipRefs.subFlash.style.color = visualState.textColor;
+    }
+  }
+
+  function updatePiPButtonLabel(){
+    pipBtn.innerHTML = pipMode
+      ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4l16 16M20 4L4 20"/></svg>返回頁面'
+      : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="14" rx="1.5"/><rect x="12" y="11" width="7" height="5" rx="1" fill="currentColor"/></svg>浮動視窗';
+  }
+
+  const PIP_STYLE = `
+    html,body{ margin:0; height:100%; background:#1B1A18; overflow:hidden; }
+    #pipRoot{ width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center;
+      font-family:'Oswald','Inter','Noto Sans TC',sans-serif; transition: background .15s ease; padding: 10px 14px; }
+    .pip-ring-wrap{ position:relative; width:60%; aspect-ratio:1/1; flex-shrink:0; }
+    .pip-ring-wrap svg{ width:100%; height:100%; transform: rotate(-90deg); }
+    .pip-center{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; transform: translateY(10px); }
+    #pipWord{ font-family:'Oswald', 'Noto Sans TC', sans-serif; font-size: 20px; letter-spacing:0.2em; text-transform:uppercase; margin-bottom:5px; }
+    #pipCount{ font-family:'JetBrains Mono',monospace; font-weight:700; font-size: 15vw; line-height:1; }
+    #pipFlash{ font-family:'Oswald', 'Noto Sans TC', sans-serif; margin-top: 12px; font-size: 24px; font-weight:600; text-align:center; line-height:1.3; }
+    #pipSubFlash{ font-family:'Inter', 'Noto Sans TC', sans-serif; margin-top: 4px; font-size: 18px; font-weight:600; text-align:center; opacity:0.8; min-height: 22px; }
+  `;
+
+  const PIP_BODY = `
+    <div id="pipRoot">
+      <div class="pip-ring-wrap">
+        <svg viewBox="0 0 120 120">
+          <circle id="pipRingBg" cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,0.16)" stroke-width="10"/>
+          <circle id="pipRingFg" cx="60" cy="60" r="52" fill="none" stroke="#F1EEE6" stroke-width="10"
+            stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="0" style="transition:stroke-dashoffset .1s linear"/>
+        </svg>
+        <div class="pip-center">
+          <div id="pipWord">準備</div>
+          <div id="pipCount">3</div>
+        </div>
+      </div>
+      <div id="pipFlash"></div>
+      <div id="pipSubFlash"></div>
+    </div>
+  `;
+
+  async function openDocumentPiP(){
+    if(!('documentPictureInPicture' in window)) return false;
+    try{
+      const pipWindow = await withTimeout(documentPictureInPicture.requestWindow({ width: 280, height: 420 }), 4000, '開啟浮動視窗逾時');
+      const fontLink = pipWindow.document.createElement('link');
+      fontLink.rel = 'stylesheet';
+      fontLink.href = 'https://fonts.googleapis.com/css2?family=Oswald:wght@600;700&family=Inter:wght@500;600&family=Noto+Sans+TC:wght@500;600;700&family=JetBrains+Mono:wght@700&display=swap';
+      pipWindow.document.head.appendChild(fontLink);
+      const style = pipWindow.document.createElement('style');
+      style.textContent = PIP_STYLE;
+      pipWindow.document.head.appendChild(style);
+      pipWindow.document.body.innerHTML = PIP_BODY;
+
+      pipRefs = {
+        root: pipWindow.document.getElementById('pipRoot'),
+        word: pipWindow.document.getElementById('pipWord'),
+        count: pipWindow.document.getElementById('pipCount'),
+        ringBg: pipWindow.document.getElementById('pipRingBg'),
+        ringFg: pipWindow.document.getElementById('pipRingFg'),
+        flash: pipWindow.document.getElementById('pipFlash'),
+        subFlash: pipWindow.document.getElementById('pipSubFlash'),
+      };
+      pipMode = 'document';
+      pipWindowRef = pipWindow;
+      pipWindow.addEventListener('pagehide', () => {
+        pipMode = null; pipRefs = null; pipWindowRef = null;
+        updatePiPButtonLabel();
+      });
+      syncPiP();
+      updatePiPButtonLabel();
+      return true;
+    }catch(e){
+      console.error('Document PiP failed', e);
+      return false;
+    }
+  }
+
+  function initCanvasPiP(){
+    pipCanvas = document.createElement('canvas');
+    pipCanvas.width = 320; pipCanvas.height = 320;
+    pipCtx = pipCanvas.getContext('2d');
+    pipVideoEl = document.createElement('video');
+    pipVideoEl.muted = true;
+    pipVideoEl.playsInline = true;
+    pipVideoEl.style.cssText = 'position:fixed; width:1px; height:1px; opacity:0; pointer-events:none;';
+    document.body.appendChild(pipVideoEl);
+  }
+
+  function wrapCJKText(c, text, cx, y, maxWidth, lineHeight){
+    if(!text){ return y; }
+    if(c.measureText(text).width <= maxWidth){
+      c.fillText(text, cx, y);
+      return y + lineHeight;
+    }
+    const mid = Math.ceil(text.length / 2);
+    c.fillText(text.slice(0, mid), cx, y);
+    c.fillText(text.slice(mid), cx, y + lineHeight);
+    return y + lineHeight * 2;
+  }
+
+  function drawPiPFrame(){
+    const c = pipCtx, W = pipCanvas.width, H = pipCanvas.height;
+    c.fillStyle = visualState.bgColor;
+    c.fillRect(0, 0, W, H);
+
+    const cx = W/2, cy = H*0.38, r = W*0.26, lineW = W*0.038;
+    c.lineWidth = lineW; c.lineCap = 'round';
+
+    c.strokeStyle = visualState.phaseType === 'idle' ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.2)';
+    c.beginPath(); c.arc(cx, cy, r, 0, Math.PI*2); c.stroke();
+
+    c.strokeStyle = visualState.ringActive;
+    c.beginPath();
+    const start = -Math.PI/2;
+    const end = start + Math.PI*2*visualState.ratio;
+    c.arc(cx, cy, r, start, end);
+    c.stroke();
+
+    c.fillStyle = visualState.textColor;
+    c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.font = `600 ${Math.round(W*0.0504)}px 'Oswald', 'Noto Sans TC', sans-serif`;
+    c.fillText(visualState.word, cx, cy - r*0.32);
+    c.font = `700 ${Math.round(W*0.17)}px 'JetBrains Mono', monospace`;
+    c.fillText(visualState.count, cx, cy + r*0.16);
+
+    let y = cy + r * 1.55;
+    c.font = `600 ${Math.round(W*0.0756)}px 'Oswald', 'Noto Sans TC', sans-serif`;
+    y = wrapCJKText(c, flashLabel.textContent, cx, y, W*0.9, Math.round(W*0.09));
+
+    if(subFlash.classList.contains('visible')){
+      c.font = `600 ${Math.round(W*0.054)}px 'Inter', 'Noto Sans TC', sans-serif`;
+      c.globalAlpha = 0.8;
+      wrapCJKText(c, subFlash.textContent, cx, y + Math.round(W*0.015), W*0.9, Math.round(W*0.072));
+      c.globalAlpha = 1;
+    }
+  }
+
+  function pipRenderLoop(){
+    if(pipMode !== 'video') return;
+    drawPiPFrame();
+  }
+
+  function onLeaveVideoPiP(){
+    pipMode = null;
+    if(pipRAF) clearInterval(pipRAF);
+    updatePiPButtonLabel();
+  }
+
+  function withTimeout(promise, ms, label){
+    return Promise.race([
+      promise,
+      new Promise((_, reject) => setTimeout(() => reject(new Error('TimeoutError: ' + label)), ms))
+    ]);
+  }
+
+  let pipBusy = false;
+  let pipBusySince = 0;
+
+  async function openVideoPiP(){
+    if(!pipCanvas) initCanvasPiP();
+    drawPiPFrame();
+
+    const stream = pipCanvas.captureStream(25);
+    pipVideoEl.srcObject = stream;
+
+    await withTimeout(pipVideoEl.play(), 4000, '播放影片逾時');
+
+    try{
+      await withTimeout(pipVideoEl.requestPictureInPicture(), 4000, '要求進入浮動視窗逾時');
+    }catch(err){
+      if(document.pictureInPictureElement === pipVideoEl){
+        console.warn('requestPictureInPicture 回傳錯誤，但實際已進入 PiP，視為成功：', err);
+      } else {
+        throw err;
+      }
+    }
+
+    pipMode = 'video';
+    if(pipRAF) clearInterval(pipRAF);
+    pipRAF = setInterval(pipRenderLoop, 150);
+    pipVideoEl.addEventListener('leavepictureinpicture', onLeaveVideoPiP, { once: true });
+    updatePiPButtonLabel();
+  }
+
+  async function togglePiP(){
+    if(pipBusy){
+      if(Date.now() - pipBusySince < 6000) return;
+      console.warn('偵測到浮動視窗請求卡死超過 6 秒，強制重置');
+      pipBusy = false;
+    }
+    pipBusy = true;
+    pipBusySince = Date.now();
+    try{
+      if(pipMode === 'document'){
+        if(pipWindowRef) pipWindowRef.close();
+        pipMode = null; pipRefs = null; pipWindowRef = null;
+        updatePiPButtonLabel();
+        return;
+      }
+      if(pipMode === 'video'){
+        if(document.pictureInPictureElement) await withTimeout(document.exitPictureInPicture(), 3000, '離開浮動視窗逾時');
+        pipMode = null;
+        if(pipRAF){ clearInterval(pipRAF); pipRAF = null; }
+        updatePiPButtonLabel();
+        return;
+      }
+      const okDoc = ('documentPictureInPicture' in window) ? await openDocumentPiP() : false;
+      if(!okDoc){
+        if('pictureInPictureEnabled' in document && document.pictureInPictureEnabled){
+          await openVideoPiP();
+        } else {
+          alert('這個瀏覽器不支援浮動視窗功能，換成 Chrome 試試看？');
+        }
+      }
+    }catch(e){
+      console.error('PiP failed', e);
+      const actuallyInPiP = (pipVideoEl && document.pictureInPictureElement === pipVideoEl) ||
+                             (pipWindowRef && !pipWindowRef.closed);
+      if(!actuallyInPiP){
+        pipMode = null;
+        updatePiPButtonLabel();
+        alert('浮動視窗開啟失敗（' + (e && e.name ? e.name : '未知錯誤') + '）。這可能跟瀏覽器權限或這個頁面的開啟方式有關，建議直接用 Chrome/Safari 開啟這個 HTML 檔案（不要透過內嵌預覽視窗）再試一次。');
+      }
+    }finally{
+      pipBusy = false;
+    }
+  }
+
+  pipBtn.addEventListener('click', togglePiP);
+
+  setInterval(() => {
+    const reallyInVideoPiP = pipVideoEl && document.pictureInPictureElement === pipVideoEl;
+
+    if(reallyInVideoPiP){
+      if(pipMode !== 'video'){
+        pipMode = 'video';
+        updatePiPButtonLabel();
+      }
+      if(!pipRAF){
+        pipRAF = setInterval(pipRenderLoop, 150);
+      }
+    } else if(pipMode === 'video'){
+      pipMode = null;
+      if(pipRAF){ clearInterval(pipRAF); pipRAF = null; }
+      updatePiPButtonLabel();
+    }
+  }, 1000);
+
+  // ==========================================================
+  // ------  以下是「雪克杯風格」計時引擎（訊息池 + 難度倍率 + 首輪特殊處理）------
+  // ==========================================================
+
+  // 熱身用的簡短提示（3-2-1 倒數期間顯示，等權重隨機挑一句）
+  const PREP_LINES = [
+    '深呼吸，準備開始',
+    '握好，核心收緊',
+    '找好你的節奏點',
+    '肩膀別聳，穩住呼吸',
+    '眼睛看前方，準備出發'
+  ];
+
+  // 訊息池：
+  //   first / go = [文字, 基準秒數, 權重] → 加權隨機（權重越高越容易被抽到）
+  //   stop       = [文字, 基準秒數]        → 均等隨機（原站 stop 陣列本來就沒有權重欄位）
+  //   finish     = [文字, 基準秒數, outcome, 權重] → 决定 outcome 後在同組內加權隨機
+  // 這個結構逐一對應「雪克杯遊戲」原站 messages 物件的真實欄位數量，
+  // 只是把內容換成重量訓練的用語，權重的相對比例也比照原站抓的感覺去設計。
+  const POOLS = {
+    // 只在整場訓練的「第一次動作階段」使用一次，之後就不會再用到
+    first: [
+      ['開始熱身，試著在進度條到尾端時剛好到極限', 45, 2]
+    ],
+    go: [
+      ['動起來，保持節奏', 30, 2],
+      ['用你最快的速度做完這組！', 15, 4],
+      ['快速而努力地做到這一點！', 10, 4],
+      ['快速而努力地做到這一點！', 10, 4],
+      ['再撐一下，就快到了', 30, 2],
+      ['專注在動作上，不看時間', 20, 3],
+      ['核心收緊，別塌腰', 20, 2.5],
+      ['穩住呼吸，繼續動作', 30, 1.5],
+      ['穩住呼吸，繼續動作', 25, 2],
+      ['肩膀壓穩，別晃', 25, 2],
+      ['慢一點，穩住節奏...', 30, 1],
+      ['換一隻手，繼續動作', 20, 2.5],
+      ['只用單邊手臂，繼續動作！', 25, 2.5],
+      ['現在開始，全力衝一把！', 30, 2],
+      ['現在開始，全力衝一把！', 30, 2.3],
+      ['捏緊握把，撐住', 10, 3],
+      ['輕輕調整握姿，繼續', 10, 4]
+    ],
+    stop: [
+      ['別碰了！冷靜一下，準備下一階段...', 25],
+      ['不要動了！', 20],
+      ['停下！深呼吸', 10],
+      ['停下！深呼吸', 5],
+      ['停下！然後....', 3],
+      ['立刻把手從器材上拿開', 25],
+      ['立刻把手從器材上拿開', 20],
+      ['立刻把手從器材上拿開', 20],
+      ['把手背在腦後', 25],
+      ['放鬆一下肩頸', 25],
+      ['捲曲手臂，展示一下你的二頭肌', 25],
+      ['甩甩你結實的手臂', 20],
+      ['摸摸你的身體，感受一下肌肉', 25],
+      ['現在停下來', 15],
+      ['停！', 25],
+      ['停！', 15],
+      ['停！', 20],
+      ['不要動！別碰它！', 25]
+    ],
+    // 主時長跑完之後：先由「衝刺意願」機率決定 outcome（go/stop），
+    // 再從屬於該 outcome 的項目中「加權隨機」抽一條文字/時長
+    finish: [
+      ['停下！不好意思，這輪不能衝刺了！再試一次，也許會有好結果...現在把手從器材上拿開，直到進度條走完為止。', 45, 'stop', 2],
+      ['衝刺吧！現在就衝刺！', 15, 'go', 4],
+      ['衝了！別浪費時間', 60, 'go', 1.5],
+      ['現在衝刺！讓這次成為你最努力的一次。', 25, 'go', 2],
+      ['衝刺吧！', 25, 'go', 2],
+      ['你只有五秒的時間衝刺，否則就算輸了喔！', 6, 'go', 5],
+      ['現在你可以衝刺了，開始吧！', 25, 'go', 2.5]
+    ]
+  };
+
+  const PHASE2_MSG = '節奏要加快了，但先忍一下喔，穩住！';
+  const PHASE3_MSG = '最後衝刺，全力保持警覺！';
+  const PHASE2_AT = 0.5;   // 超過 50% 時間：速度 x2
+  const PHASE3_AT = 0.75;  // 超過 75% 時間：速度 x4
+
+  // 難度倍率：[動作倍率, 停止倍率]，完全對應原站的 modes 結構
+  // 數字越小，該類型段落被壓得越短
+  const MODES = {
+    boring: [1.25, 1.5],   // 無聊的：動作較久、停止較久
+    easy:   [1,    1.25],  // 簡單
+    normal: [1,    1],     // 普通
+    hard:   [0.75, 0.6],   // 困難：動作變短、停止變更短
+    insane: [0.6,  0.3]    // 不可能的
+  };
+
+  // 加權隨機：用於 first / go / finish（有第三個權重欄位的池子）
+  function pickWeighted(pool){
+    const total = pool.reduce((s, item) => s + item[item.length - 1], 0);
+    let r = Math.random() * total;
+    for(const item of pool){
+      r -= item[item.length - 1];
+      if(r <= 0) return item;
+    }
+    return pool[pool.length - 1];
+  }
+
+  // 均等隨機：只用於 stop（原站 stop 陣列沒有權重欄位）
+  function pickUniform(pool){
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+
+  let durationTier = 'normal';
+  let difficulty = 'normal';
+  let willingness = 0.5; // 0, 0.2, 0.5, 0.7, 0.9：影響最後能否進入最後衝刺的機率
+
+  // 持續時間基準（分鐘）。實際場次時長 = 基準 × (0.5 ~ 1.5) 隨機
+  const DURATION_BASE_MIN = {
+    tiny: 2, short: 7, normal: 15, long: 30, veryLong: 60
+  };
+
+  function selectChoice(row, target){
+    [...row.children].forEach(c => c.classList.remove('active'));
+    target.classList.add('active');
+  }
+
+  durationRow.addEventListener('click', (e) => {
+    const c = e.target.closest('.choice');
+    if(!c) return;
+    selectChoice(durationRow, c);
+    durationTier = c.dataset.v;
+  });
+
+  difficultyRow.addEventListener('click', (e) => {
+    const c = e.target.closest('.choice');
+    if(!c) return;
+    selectChoice(difficultyRow, c);
+    difficulty = c.dataset.v;
+  });
+
+  const willingnessRow = document.getElementById('willingnessRow');
+  willingnessRow.addEventListener('click', (e) => {
+    const c = e.target.closest('.choice');
+    if(!c) return;
+    selectChoice(willingnessRow, c);
+    willingness = parseFloat(c.dataset.v);
+  });
+
+  function fmt(sec){
+    sec = Math.max(0, Math.round(sec));
+    const m = Math.floor(sec/60);
+    const s = sec % 60;
+    return String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  }
+
+  function randRange([a,b]){ return a + Math.random() * (b - a); }
+  function pick(arr){ return arr[Math.floor(Math.random() * arr.length)]; }
+
+  let audioCtx = null;
+  function beep(freq, dur){
+    if(isMuted) return;
+    try{
+      if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + dur);
+    }catch(e){}
+  }
+
+  let timerId = null;
+  let sessionStartAt = 0;
+  let sessionEndAt = 0;
+  let sessionTotalMs = 0;
+  let phase = 'countdown'; // countdown | go | stop
+  let phaseEndAt = 0;
+  let phaseDurationMs = 0;
+  let switchCount = 0;
+  let goTotalMs = 0;
+  let stopTotalMs = 0;
+  let lastTickTs = 0;
+  let phase2Shown = false;
+  let phase3Shown = false;
+  let isFirstRound = true;     // 是否還沒用過 first 池
+  let isFinalPhase = false;
+  let finalPhaseDurationMs = 0;
+  let finalPhaseEndAt = 0;
+  let finalOutcome = null;     // 'go' | 'stop'
+
+  function startSession(){
+    setupEl.classList.add('hidden');
+    doneEl.classList.add('hidden');
+    doneEl.classList.remove('outcome-fail');
+    runEl.classList.remove('hidden');
+    runEl.classList.remove('go','stop');
+
+    const baseSec = DURATION_BASE_MIN[durationTier] * 60;
+    sessionTotalMs = randRange([baseSec * 0.5, baseSec * 1.5]) * 1000;
+    sessionStartAt = Date.now();
+    sessionEndAt = sessionStartAt + sessionTotalMs;
+    switchCount = 0;
+    goTotalMs = 0;
+    stopTotalMs = 0;
+    lastTickTs = Date.now();
+    phase2Shown = false;
+    phase3Shown = false;
+    isFirstRound = true;
+    isFinalPhase = false;
+    finalOutcome = null;
+    subFlash.classList.remove('visible');
+
+    totalTimeLabel.textContent = fmt(sessionTotalMs/1000);
+    progressFill.style.width = '0%';
+    showTimerUI();
+
+    beginCountdown();
+  }
+
+  let timerHideTimeout = null;
+  function showTimerUI(){
+    timerUI.classList.remove('timer-ui-hidden');
+    clearTimeout(timerHideTimeout);
+    timerHideTimeout = setTimeout(hideTimerUI, 3000);
+  }
+  function hideTimerUI(){
+    timerUI.classList.add('timer-ui-hidden');
+  }
+  timerTapZone.addEventListener('click', showTimerUI);
+
+  function beginCountdown(){
+    phase = 'countdown';
+    let n = 3;
+    flashLabel.textContent = pick(PREP_LINES);
+    runEl.classList.remove('go','stop');
+    applyVisual('準備', String(n), 1, 'idle');
+
+    clearInterval(timerId);
+    timerId = setInterval(() => {
+      n -= 1;
+      if(n <= 0){
+        clearInterval(timerId);
+        beginPhase('go');
+      } else {
+        applyVisual('準備', String(n), 1, 'idle');
+        beep(440, 0.12);
+      }
+    }, 1000);
+  }
+
+  // 超過主時長 50% → 速度 x2（時長 ÷2）；超過 75% → 速度 x4（時長 ÷4）
+  function getTimeSpeedFactor(){
+    if(sessionTotalMs <= 0) return 1;
+    const t = (Date.now() - sessionStartAt) / sessionTotalMs;
+    if(t > PHASE3_AT) return 4;
+    if(t > PHASE2_AT) return 2;
+    return 1;
+  }
+
+  // 從訊息池挑一則：go/first 用「加權隨機」，stop 用「均等隨機」（對應原站真實結構）
+  // 再套用難度雙倍率（動作/停止各自獨立）與中後期加速倍率，算出這一段實際秒數
+  // isWarmup 為 true 時（首輪熱身）不套用難度倍率與加速，維持固定時長
+  function rollPhase(pool, kind, isWarmup){
+    const [text, baseSec] = (kind === 'stop') ? pickUniform(pool) : pickWeighted(pool);
+    if(isWarmup){
+      return { text, seconds: baseSec };
+    }
+    const modeIdx = kind === 'go' ? 0 : 1; // 0=動作倍率, 1=停止倍率
+    const diffMul = (MODES[difficulty] || MODES.normal)[modeIdx];
+    const speedFactor = getTimeSpeedFactor(); // 2x / 4x 中後期加速
+    const seconds = Math.max(2, (baseSec * diffMul) / speedFactor);
+    return { text, seconds };
+  }
+
+  function beginPhase(kind){
+    phase = kind;
+    // 首輪的「動作」階段用專屬熱身池，之後才回到一般 go 池
+    const useWarmup = (kind === 'go' && isFirstRound);
+    const pool = useWarmup ? POOLS.first : POOLS[kind];
+    const { text, seconds } = rollPhase(pool, kind, useWarmup);
+    if(kind === 'go' && isFirstRound) isFirstRound = false;
+
+    phaseDurationMs = seconds * 1000;
+    phaseEndAt = Date.now() + phaseDurationMs;
+    switchCount += 1;
+
+    runEl.classList.remove('go','stop');
+    runEl.classList.add(kind);
+    applyVisual(kind === 'go' ? '動作' : '停止', String(Math.ceil(phaseDurationMs/1000)), 1, kind);
+
+    flashLabel.innerHTML = text;
+    if(kind === 'go'){
+      beep(660, 0.15);
+    } else {
+      beep(220, 0.22);
+    }
+
+    tickLoop();
+  }
+
+  function tickLoop(){
+    clearInterval(timerId);
+    timerId = setInterval(() => {
+      const now = Date.now();
+      const dt = now - lastTickTs;
+      lastTickTs = now;
+
+      // ---- 完賽（最後衝刺 / 控制失敗收工）階段 ----
+      if(isFinalPhase){
+        if(finalOutcome === 'go') goTotalMs += dt; else stopTotalMs += dt;
+
+        const finalRemain = finalPhaseEndAt - now;
+        if(finalRemain <= 0){
+          finishSession();
+          return;
+        }
+        totalTimeLabel.textContent = fmt(finalRemain/1000);
+        progressFill.style.width = '100%';
+        const ratio = Math.max(0, Math.min(1, finalRemain / finalPhaseDurationMs));
+        const word = finalOutcome === 'go' ? '最後衝刺' : '保持停止';
+        applyVisual(word, String(Math.ceil(finalRemain/1000)), ratio, finalOutcome);
+        return;
+      }
+
+      if(phase === 'go') goTotalMs += dt;
+      if(phase === 'stop') stopTotalMs += dt;
+
+      const totalRemain = sessionEndAt - now;
+      if(totalRemain <= 0){
+        beginFinalPhase();
+        return;
+      }
+      totalTimeLabel.textContent = fmt(totalRemain/1000);
+      const progressPct = 100 - (totalRemain / sessionTotalMs) * 100;
+      progressFill.style.width = Math.min(100, progressPct) + '%';
+
+      const t = (now - sessionStartAt) / sessionTotalMs;
+      if(!phase2Shown && t >= PHASE2_AT){
+        phase2Shown = true;
+        subFlash.textContent = PHASE2_MSG;
+        subFlash.classList.add('visible');
+      }
+      if(!phase3Shown && t >= PHASE3_AT){
+        phase3Shown = true;
+        subFlash.textContent = PHASE3_MSG;
+        subFlash.classList.add('visible');
+        beep(520, 0.15);
+      }
+
+      const phaseRemain = phaseEndAt - now;
+      const remainSec = Math.max(0, Math.ceil(phaseRemain/1000));
+      const ratio = Math.max(0, Math.min(1, phaseRemain / phaseDurationMs));
+      applyVisual(stateWord.textContent, String(remainSec), ratio, phase);
+
+      if(phaseRemain <= 0){
+        beginPhase(phase === 'go' ? 'stop' : 'go');
+      }
+    }, 100);
+  }
+
+  // 主時長跑完後：先用「衝刺意願」的機率決定這輪是否進入最後衝刺（outcome），
+  // 再從 finish 池中屬於該 outcome 的項目「加權隨機」挑一句文字/時長。
+  // 對應原站「根據意願機率決定能不能雪克，再從 finish 訊息庫加權隨機抽一條」的設計。
+  function beginFinalPhase(){
+    const outcome = Math.random() < willingness ? 'go' : 'stop';
+    const candidates = POOLS.finish.filter(item => item[2] === outcome);
+    const pool = candidates.length ? candidates : POOLS.finish;
+    const [text, baseSec] = pickWeighted(pool);
+    const diffMul = (MODES[difficulty] || MODES.normal)[0]; // 沿用「動作」倍率
+
+    isFinalPhase = true;
+    finalOutcome = outcome; // 'go' or 'stop'
+    finalPhaseDurationMs = outcome === 'go'
+      ? Math.max(5, baseSec * diffMul) * 1000
+      : Math.max(3, baseSec) * 1000; // 失敗收尾不受難度倍率影響，維持穩定的收工時間
+    finalPhaseEndAt = Date.now() + finalPhaseDurationMs;
+
+    runEl.classList.remove('go','stop');
+    runEl.classList.add(outcome);
+    flashLabel.innerHTML = text;
+    subFlash.classList.remove('visible');
+    beep(outcome === 'go' ? 880 : 220, outcome === 'go' ? 0.2 : 0.3);
+
+    const word = outcome === 'go' ? '最後衝刺' : '保持停止';
+    applyVisual(word, String(Math.ceil(finalPhaseDurationMs/1000)), 1, outcome);
+  }
+
+  function finishSession(){
+    clearInterval(timerId);
+    clearTimeout(timerHideTimeout);
+    closePiP();
+    runEl.classList.add('hidden');
+    doneEl.classList.remove('hidden');
+
+    const doneTitle = document.getElementById('doneTitle');
+    const doneDesc = document.getElementById('doneDesc');
+
+    if(finalOutcome === 'stop'){
+      doneEl.classList.add('outcome-fail');
+      if(willingness === 0){
+        doneTitle.textContent = '恭喜，你完成了這次的控制';
+        doneDesc.innerHTML = '這次一開始就選了「先不衝刺」，所以沒有排進最後衝刺名單。紅綠燈總共交換了 <span id="switchCount">' + switchCount + '</span> 次，隨時可以再挑戰一次。';
+      } else {
+        doneTitle.textContent = '這輪控制失敗';
+        doneDesc.innerHTML = '這輪你不能最後衝刺，紅綠燈總共交換了 <span id="switchCount">' + switchCount + '</span> 次。休息一下，隨時可以再挑戰一次！';
+      }
+    } else {
+      doneEl.classList.remove('outcome-fail');
+      doneTitle.textContent = '今天也撐過去了';
+      doneDesc.innerHTML = '紅綠燈總共交換了 <span id="switchCount">' + switchCount + '</span> 次，你的身體知道發生了什麼事。';
+    }
+
+    document.getElementById('statGo').textContent = fmt(goTotalMs/1000);
+    document.getElementById('statStop').textContent = fmt(stopTotalMs/1000);
+  }
+
+  function quitSession(){
+    clearInterval(timerId);
+    clearTimeout(timerHideTimeout);
+    closePiP();
+    runEl.classList.add('hidden');
+    setupEl.classList.remove('hidden');
+  }
+
+  function closePiP(){
+    if(pipMode === 'document' && pipWindowRef){ pipWindowRef.close(); }
+    if(pipMode === 'video' && document.pictureInPictureElement){ document.exitPictureInPicture().catch(()=>{}); }
+    if(pipRAF){ clearInterval(pipRAF); pipRAF = null; }
+    pipMode = null; pipRefs = null; pipWindowRef = null;
+    updatePiPButtonLabel();
+  }
+
+  startBtn.addEventListener('click', startSession);
+  quitBtn.addEventListener('click', quitSession);
+  againBtn.addEventListener('click', () => {
+    doneEl.classList.add('hidden');
+    doneEl.classList.remove('outcome-fail');
+    setupEl.classList.remove('hidden');
+  });
+})();
+</script>
+</body>
+</html>
