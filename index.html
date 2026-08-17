@@ -137,6 +137,7 @@
   .stop-dot{ background: var(--stop-bright); }
   .num-dot{ background: var(--charcoal-2); border:1px solid #3a372f; color: var(--chalk-dim); }
   .help-text{ font-size:13.5px; line-height:1.6; color: var(--chalk-dim); }
+  .help-item .help-text{ margin-top: 3px; }
   .help-text b{ color: var(--chalk); font-weight:600; }
   .help-got-it{
     width:100%; margin-top: 22px;
@@ -339,6 +340,7 @@
     font-weight:700;
     font-size: 15px;
     letter-spacing: 0.3em;
+    margin-right: -0.3em;
     text-transform: uppercase;
     color: var(--chalk-dim);
     margin-bottom: 6px;
@@ -444,7 +446,7 @@
       </div>
       <div class="help-btn" id="helpBtn">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.9.4-1.5 1-1.5 2.2" stroke-linecap="round"/><circle cx="12" cy="17" r="0.6" fill="currentColor" stroke="none"/></svg>
-        新手教學
+        遊戲規則
       </div>
     </div>
   </div>
@@ -490,59 +492,68 @@
   <div class="hint-row">綠燈 = 開始動作　·　紅燈 = 停止任何動作</div>
 </div>
 
-<!-- ============ 新手教學視窗 ============ -->
+<!-- ============ 遊戲規則視窗 ============ -->
 <div id="helpOverlay" class="help-overlay hidden">
   <div class="help-card">
     <div class="help-header">
-      <div class="help-title">新手教學</div>
+      <div class="help-title">遊戲規則</div>
       <div class="help-close" id="helpClose">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 5l14 14M19 5L5 19"/></svg>
       </div>
     </div>
     <div class="help-body">
+      <div class="help-text" style="margin-bottom:-4px;">選擇合適的選項，然後跟隨指示開始你的動作吧。</div>
       <div class="help-item">
         <div class="help-dot go-dot"></div>
-        <div class="help-text"><b>綠燈亮起</b>：開始動作，保持節奏一直做下去。</div>
+        <div class="help-text">當<b>綠燈</b>亮起時，開始動作，保持節奏一直做下去。</div>
       </div>
       <div class="help-item">
         <div class="help-dot stop-dot"></div>
-        <div class="help-text"><b>紅燈亮起</b>：立刻停止任何動作，不要鬆懈，直到燈號再次改變。</div>
+        <div class="help-text">當<b>紅燈</b>亮起時，立刻停止任何動作，不要鬆懈，直到燈號再次改變。</div>
       </div>
       <div class="help-item">
         <div class="help-dot num-dot">1</div>
-        <div class="help-text"><b>總時長</b>：選一個級距（非常短～非常長），實際時長會在區間內隨機決定，每次都不一樣。</div>
+        <div class="help-text">當綠燈畫面的進度條到尾端時，你也應該剛好到達極限了。</div>
       </div>
       <div class="help-item">
         <div class="help-dot num-dot">2</div>
-        <div class="help-text"><b>難度</b>：動作與停止各自有獨立倍率。難度越高，動作段落略縮短，停止段落縮得更多，讓節奏更緊湊、更不對稱。</div>
+        <div class="help-text">在進度條接近尾端時做好衝刺的準備，當然，你不會知道進度條什麼時候能走到「最後衝刺」區域的（訓練中總時長與進度條 3 秒後會自動隱藏，可以用來預計整個訓練時間。點一下畫面左上方空白處可以再叫出來。）</div>
       </div>
       <div class="help-item">
         <div class="help-dot num-dot">3</div>
-        <div class="help-text"><b>衝刺意願</b>：影響主時長跑完後能不能進入「最後衝刺」。數值越高，成功進入最後衝刺的機率越高；越低則越容易直接被判定這輪控制失敗、收工。</div>
+        <div class="help-text">在進入最後衝刺階段前，請好好撐著！</div>
       </div>
       <div class="help-item">
         <div class="help-dot num-dot">4</div>
-        <div class="help-text"><b>首輪熱身</b>：第一次「動作」階段會顯示專屬的熱身指示，之後才進入一般的隨機動作／停止循環。</div>
+        <div class="help-text">如果你結束的太早了，那就把你的手從器材上拿開。因為你控制失敗了，所以不能解鎖完整的任務。</div>
       </div>
       <div class="help-item">
         <div class="help-dot num-dot">5</div>
-        <div class="help-text"><b>中後期加速</b>：主時長超過 50% 時，動作／停止的段落時間直接減半（等於節奏變 2 倍快）；超過 75% 時再減半一次（變成 4 倍快），畫面會同步跳出提醒。</div>
+        <div class="help-text">當畫面顯示最後衝刺時，你可以盡情衝刺了！</div>
       </div>
       <div class="help-item">
         <div class="help-dot num-dot">6</div>
-        <div class="help-text"><b>訊息抽取方式</b>：「動作」與「完賽」訊息是加權隨機（部分句子出現機率較高），「停止」訊息則是單純均等隨機，每句機率相同。</div>
+        <div class="help-text">當你歷盡艱辛終於可以進行最後衝刺的時候，抱歉，這也是有時間限制的。如果你沒有在最後衝刺的進度條到達尾端之前結束，那麼你將失去了衝刺的權利。</div>
       </div>
       <div class="help-item">
         <div class="help-dot num-dot">7</div>
-        <div class="help-text"><b>完賽判定</b>：主時長跑完後，依「衝刺意願」的機率決定這輪是進入「最後衝刺」（有限時間內完成最後一組），還是「控制失敗」直接收工——收工後可以再挑戰一次。</div>
+        <div class="help-text">如果畫面最後變成了亮紅色，就說明你今天不太走運，不能衝刺哦。</div>
       </div>
       <div class="help-item">
         <div class="help-dot num-dot">8</div>
-        <div class="help-text"><b>浮動視窗</b>：訓練畫面右上角的按鈕，可以把倒數畫面變成浮動小視窗，切到其他頁面時也能繼續看到。<br>（iOS 版本會先跳出直播畫面，請點選畫面上的子母畫面按鈕，即可顯示浮動視窗！）</div>
+        <div class="help-text">別擔心，如果你沒控制住，或者不太走運，你都可以選擇重頭再來一次。我敢保證，再次拿起衝刺過的、還在晃動的器材會更有意思！</div>
       </div>
       <div class="help-item">
         <div class="help-dot num-dot">9</div>
-        <div class="help-text"><b>畫面上方空白處</b>：訓練中時鐘跟進度條 3 秒後會自動隱藏，點一下畫面最上方空白處可以再叫出來。</div>
+        <div class="help-text">訓練畫面右上角的按鈕，可以把倒數畫面變成浮動小視窗，切到其他頁面時也能繼續看到。（此功能僅在 Safari「分頁模式」下可用；若是從主畫面圖示開啟（加到主畫面後），iOS 系統限制無法使用浮動視窗，此按鈕會自動隱藏。）</div>
+      </div>
+      <div class="help-item">
+        <div class="help-dot num-dot">10</div>
+        <div class="help-text">放點訓練影片，這個訓練會更刺激唷！</div>
+      </div>
+      <div class="help-item">
+        <div class="help-dot num-dot">11</div>
+        <div class="help-text">祝你好運！</div>
       </div>
     </div>
     <button class="help-got-it" id="helpGotIt">我知道了</button>
@@ -671,27 +682,36 @@
   let pipWindowRef = null;
   let pipCanvas = null, pipCtx = null, pipVideoEl = null, pipRAF = null;
 
+  const ringBgEl = document.querySelector('#run .ring-bg');
+
   let visualState = {
     phaseType: 'idle', word: '', count: '', ratio: 1,
-    bgColor: '#1B1A18', textColor: '#F1EEE6',
-    ringTrack: 'rgba(255,255,255,0.16)', ringActive: '#F1EEE6'
+    bgColor: '#1B1A18',
+    wordColor: '#B8B3A8', countColor: '#F1EEE6',
+    flashColor: '#B8B3A8', subFlashColor: '#E15B24',
+    ringBgColor: 'rgba(255,255,255,0.16)', ringFgColor: '#F1EEE6'
   };
 
-  function computeColors(phaseType){
-    if(phaseType === 'go'){
-      return { bgColor:'#9CC24A', textColor:'#12180a', ringTrack:'rgba(0,0,0,0.15)', ringActive:'rgba(0,0,0,0.6)' };
-    }
-    if(phaseType === 'stop'){
-      return { bgColor:'#E15B24', textColor:'#200f06', ringTrack:'rgba(0,0,0,0.15)', ringActive:'rgba(0,0,0,0.6)' };
-    }
-    return { bgColor:'#1B1A18', textColor:'#F1EEE6', ringTrack:'rgba(255,255,255,0.16)', ringActive:'#F1EEE6' };
+  // 直接讀取畫面元素「當下實際算出來」的 CSS 顏色，
+  // 而不是另外維護一份手動對照表，確保 PiP 顯示的顏色跟畫面上完全一致。
+  // 注意：呼叫時 runEl 的 go/stop class 必須已經套用好，讀到的才是正確顏色。
+  function readLiveColors(){
+    return {
+      bgColor: getComputedStyle(runEl).backgroundColor,
+      wordColor: getComputedStyle(stateWord).color,
+      countColor: getComputedStyle(stateCount).color,
+      flashColor: getComputedStyle(flashLabel).color,
+      subFlashColor: getComputedStyle(subFlash).color,
+      ringBgColor: getComputedStyle(ringBgEl).stroke,
+      ringFgColor: getComputedStyle(ringFg).stroke
+    };
   }
 
   function applyVisual(word, countText, ratio, phaseType){
     stateWord.textContent = word;
     stateCount.textContent = countText;
     ringFg.style.strokeDashoffset = RING_CIRC * (1 - ratio);
-    const colors = computeColors(phaseType);
+    const colors = readLiveColors();
     visualState = { phaseType, word, count: countText, ratio, ...colors };
     syncPiP();
   }
@@ -700,18 +720,17 @@
     if(pipMode === 'document' && pipRefs){
       pipRefs.root.style.background = visualState.bgColor;
       pipRefs.word.textContent = visualState.word;
-      pipRefs.word.style.color = visualState.textColor;
+      pipRefs.word.style.color = visualState.wordColor;
       pipRefs.count.textContent = visualState.count;
-      pipRefs.count.style.color = visualState.textColor;
-      pipRefs.ringBg.setAttribute('stroke', visualState.ringTrack);
-      pipRefs.ringFg.setAttribute('stroke', visualState.ringActive);
+      pipRefs.count.style.color = visualState.countColor;
+      pipRefs.ringBg.setAttribute('stroke', visualState.ringBgColor);
+      pipRefs.ringFg.setAttribute('stroke', visualState.ringFgColor);
       pipRefs.ringFg.style.strokeDashoffset = RING_CIRC * (1 - visualState.ratio);
       pipRefs.flash.innerHTML = flashLabel.innerHTML;
-      pipRefs.flash.style.color = visualState.textColor;
-      pipRefs.flash.style.opacity = visualState.textColor === '#F1EEE6' ? '0.85' : '0.7';
+      pipRefs.flash.style.color = visualState.flashColor;
       const subVisible = subFlash.classList.contains('visible');
       pipRefs.subFlash.textContent = subVisible ? subFlash.textContent : '';
-      pipRefs.subFlash.style.color = visualState.textColor;
+      pipRefs.subFlash.style.color = visualState.subFlashColor;
     }
   }
 
@@ -822,32 +841,33 @@
     const cx = W/2, cy = H*0.38, r = W*0.26, lineW = W*0.038;
     c.lineWidth = lineW; c.lineCap = 'round';
 
-    c.strokeStyle = visualState.phaseType === 'idle' ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.2)';
+    c.strokeStyle = visualState.ringBgColor;
     c.beginPath(); c.arc(cx, cy, r, 0, Math.PI*2); c.stroke();
 
-    c.strokeStyle = visualState.ringActive;
+    c.strokeStyle = visualState.ringFgColor;
     c.beginPath();
     const start = -Math.PI/2;
     const end = start + Math.PI*2*visualState.ratio;
     c.arc(cx, cy, r, start, end);
     c.stroke();
 
-    c.fillStyle = visualState.textColor;
     c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.fillStyle = visualState.wordColor;
     c.font = `600 ${Math.round(W*0.0504)}px 'Oswald', 'Noto Sans TC', sans-serif`;
     c.fillText(visualState.word, cx, cy - r*0.32);
+    c.fillStyle = visualState.countColor;
     c.font = `700 ${Math.round(W*0.17)}px 'JetBrains Mono', monospace`;
     c.fillText(visualState.count, cx, cy + r*0.16);
 
     let y = cy + r * 1.55;
+    c.fillStyle = visualState.flashColor;
     c.font = `600 ${Math.round(W*0.0756)}px 'Oswald', 'Noto Sans TC', sans-serif`;
     y = wrapCJKText(c, flashLabel.textContent, cx, y, W*0.9, Math.round(W*0.09));
 
     if(subFlash.classList.contains('visible')){
+      c.fillStyle = visualState.subFlashColor;
       c.font = `600 ${Math.round(W*0.054)}px 'Inter', 'Noto Sans TC', sans-serif`;
-      c.globalAlpha = 0.8;
       wrapCJKText(c, subFlash.textContent, cx, y + Math.round(W*0.015), W*0.9, Math.round(W*0.072));
-      c.globalAlpha = 1;
     }
   }
 
@@ -931,8 +951,8 @@
 
   async function togglePiP(){
     if(pipBusy){
-      if(Date.now() - pipBusySince < 6000) return;
-      console.warn('偵測到浮動視窗請求卡死超過 6 秒，強制重置');
+      if(Date.now() - pipBusySince < 3000) return;
+      console.warn('偵測到浮動視窗請求卡死超過 3 秒，強制重置');
       pipBusy = false;
     }
     pipBusy = true;
@@ -981,6 +1001,19 @@
   }
 
   pipBtn.addEventListener('click', togglePiP);
+
+  // iOS「加入主畫面」後（standalone 模式）是跑在受限的 WKWebView 容器裡，
+  // 目前不支援任何形式的 Picture-in-Picture（無論 requestPictureInPicture
+  // 還是 webkitSetPresentationMode 都會失敗），這是平台限制而非程式問題，
+  // 所以偵測到這個模式時直接隱藏按鈕，避免使用者一直看到打不開的錯誤。
+  (function checkPiPAvailability(){
+    const isStandalone = window.navigator.standalone === true
+      || window.matchMedia('(display-mode: standalone)').matches;
+    const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    if(isStandalone && iOS){
+      pipBtn.style.display = 'none';
+    }
+  })();
 
   setInterval(() => {
     const reallyInVideoPiP = pipVideoEl && (document.pictureInPictureElement === pipVideoEl || pipVideoEl.webkitPresentationMode === 'picture-in-picture');
@@ -1035,7 +1068,7 @@
       ['穩住呼吸，繼續動作', 30, 1.5],
       ['穩住呼吸，繼續動作', 25, 2],
       ['肩膀壓穩，別晃', 25, 2],
-      ['慢一點，穩住節奏...', 30, 1],
+      ['慢一點，穩住節奏⋯', 30, 1],
       ['換一隻手，繼續動作', 20, 2.5],
       ['只用單邊手臂，繼續動作！', 25, 2.5],
       ['現在開始，全力衝一把！', 30, 2],
@@ -1044,19 +1077,19 @@
       ['輕輕調整握姿，繼續', 10, 4]
     ],
     stop: [
-      ['別碰了！冷靜一下，準備下一階段...', 25],
+      ['別碰了！冷靜一下⋯', 25],
       ['不要動了！', 20],
       ['停下！深呼吸', 10],
       ['停下！深呼吸', 5],
-      ['停下！然後....', 3],
+      ['停下！然後⋯', 3],
       ['立刻把手從器材上拿開', 25],
       ['立刻把手從器材上拿開', 20],
       ['立刻把手從器材上拿開', 20],
       ['把手背在腦後', 25],
       ['放鬆一下肩頸', 25],
-      ['捲曲手臂，展示一下你的二頭肌', 25],
+      ['展示一下你的手臂肌肉', 25],
       ['甩甩你結實的手臂', 20],
-      ['摸摸你的身體，感受一下肌肉', 25],
+      ['摸摸你的身體', 25],
       ['現在停下來', 15],
       ['停！', 25],
       ['停！', 15],
@@ -1066,17 +1099,17 @@
     // 主時長跑完之後：先由「衝刺意願」機率決定 outcome（go/stop），
     // 再從屬於該 outcome 的項目中「加權隨機」抽一條文字/時長
     finish: [
-      ['停下！不好意思，這輪不能衝刺了！再試一次，也許會有好結果...現在把手從器材上拿開，直到進度條走完為止。', 45, 'stop', 2],
+      ['停！不要動了！把手從器材上拿開，直到進度條走完。', 45, 'stop', 2],
       ['衝刺吧！現在就衝刺！', 15, 'go', 4],
       ['衝了！別浪費時間', 60, 'go', 1.5],
       ['現在衝刺！讓這次成為你最努力的一次。', 25, 'go', 2],
       ['衝刺吧！', 25, 'go', 2],
-      ['你只有五秒的時間衝刺，否則就算輸了喔！', 6, 'go', 5],
+      ['現在快衝刺，否則就算輸了喔！', 6, 'go', 5],
       ['現在你可以衝刺了，開始吧！', 25, 'go', 2.5]
     ]
   };
 
-  const PHASE2_MSG = '節奏要加快了，但先忍一下喔，穩住！';
+  const PHASE2_MSG = '節奏加快了，繼續穩住喔！';
   const PHASE3_MSG = '最後衝刺，全力保持警覺！';
   const PHASE2_AT = 0.5;   // 超過 50% 時間：速度 x2
   const PHASE3_AT = 0.75;  // 超過 75% 時間：速度 x4
